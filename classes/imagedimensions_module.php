@@ -8,7 +8,7 @@
 		protected function get_info() {
 			return new Core_ModuleInfo(
 				"Image Dimensions",
-				"Automatically resizes products images after upload based upon configured dimensions.",
+				"Provides automatic resizing of products images after upload based upon configured dimensions.",
 				"Limewheel Creative Inc."
 			);
 		}
@@ -53,9 +53,12 @@
 			$files = $object->list_related_records_deferred('images', $controller->formGetEditSessionKey());
 			$config = ImageDimensions_Configuration::create();
 
+			if($config->max_width === 'auto' && $config->max_height === 'auto')
+				return; // no changes, no need to process the image
+
 			foreach($files as $file) {
 				if(!$file->is_image())
-					return;
+					continue;
 			
 				$source_path = PATH_APP . $file->getPath();
 				$destination_path = PATH_APP . $file->getThumbnailPath($config->max_width, $config->max_height);
@@ -82,9 +85,5 @@
 		
 		public function listTabs($tab_collection) {
 			return $this->list_tabs($tab_collection);
-		}
-		
-		public function listHtmlEditorConfigs() {
-			return $this->list_html_editor_configs();
 		}
 	}
