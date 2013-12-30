@@ -63,13 +63,42 @@
 				$source_path = PATH_APP . $file->getPath();
 
 				//Lets get image dimensions
-				$imagedim = getimagesize($source_path);
+				$img_dim = getimagesize($source_path);
+				$img_width = $img_dim[0];
+				$img_height = $img_dim[1];
+				$img_aspect_ratio = $img_width / $img_height;
+				$new_img_height =  round($config->max_width / $img_aspect_ratio,0);
+				$new_img_width =  round($img_aspect_ratio * $config->max_height,0);
 
-				//skip resizing if image is smaller than config setting
-				if($imagedim[0] <= $config->max_width || $imagedim[1] <= $config->max_height)
+				//resize file to max width and calculated aspect ratio height
+				if (($img_width > $config->max_width) && ($img_height == $config->max_height)) {
+					$destination_path = PATH_APP . $file->getThumbnailPath($config->max_width, $new_img_height);
+				}
+				
+				elseif (($img_width == $config->max_width) && ($img_height > $config->max_height)) {
+					$destination_path = PATH_APP . $file->getThumbnailPath($new_img_width, $config->max_height);
+				}
+				elseif ($img_width < $config->max_width || $img_height < $config->max_height) {
+					//skip resizing if image is smaller than config setting
 					continue;
-
-				$destination_path = PATH_APP . $file->getThumbnailPath($config->max_width, $config->max_height);
+				}
+				else
+				{
+					if ($img_aspect_ratio == 1 )
+					{
+						if ($config->max_width >= $config->max_height)
+							$destination_path = PATH_APP . $file->getThumbnailPath($config->max_width, $config->max_width);
+						else
+							$destination_path = PATH_APP . $file->getThumbnailPath($config->max_height, $config->max_height);
+					}
+					else
+					{
+						if ($img_width > $img_height)
+							$destination_path = PATH_APP . $file->getThumbnailPath($config->max_width, $new_img_height);
+						else
+							$destination_path = PATH_APP . $file->getThumbnailPath($new_img_width, $config->max_height);
+					}
+				}
 
 				copy($destination_path, $source_path);
 			} 
