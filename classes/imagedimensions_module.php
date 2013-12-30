@@ -61,6 +61,14 @@
 					continue;
 			
 				$source_path = PATH_APP . $file->getPath();
+
+				//Lets get image dimensions
+				$imagedim = getimagesize($source_path);
+
+				//skip resizing if image is smaller than config setting
+				if($imagedim[0] <= $config->max_width || $imagedim[1] <= $config->max_height)
+					continue;
+
 				$destination_path = PATH_APP . $file->getThumbnailPath($config->max_width, $config->max_height);
 
 				copy($destination_path, $source_path);
